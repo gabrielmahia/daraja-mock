@@ -1,16 +1,16 @@
 # daraja-mock
 
-**Local test server for the Safaricom M-Pesa Daraja v3 API. Zero dependencies. No Safaricom account needed.**
+**Local test server for the Safaricom M-Pesa Daraja v3 API.**
 
 [![CI](https://github.com/gabrielmahia/daraja-mock/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrielmahia/daraja-mock/actions)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](#)
-[![Tests](https://img.shields.io/badge/tests-32%20passing-brightgreen)](#)
-[![Zero dependencies](https://img.shields.io/badge/dependencies-zero-success)](#)
+[![Tests](https://img.shields.io/badge/tests-37%20passing-brightgreen)](#)
+[![Zero deps](https://img.shields.io/badge/dependencies-zero-brightgreen)](#)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey)](LICENSE)
 
-Test your M-Pesa integration without hitting Safaricom sandbox. Runs in-process as a context manager
-or as a standalone server. Configurable failure scenarios so you can test every edge case your
-production system will encounter.
+Test your M-Pesa integration without a Safaricom account, sandbox credentials,
+or internet connection. Configure scenarios to simulate user cancellation,
+insufficient funds, timeouts, and more — all from a single in-process server.
 
 ---
 
@@ -22,49 +22,62 @@ pip install daraja-mock
 
 ---
 
-## Usage in pytest
+## Quickstart
 
 ```python
 from daraja_mock import DarajaMock, Scenario
 
+mock = DarajaMock()
+
 def test_stk_push_success():
-    mock = DarajaMock()
     with mock.run() as base_url:
-        # Point your client at the mock instead of Safaricom
-        client = MyMpesaClient(base_url=base_url)
-        result = client.stk_push("0712345678", 100, "OrderRef")
+        # Point your MpesaClient at base_url instead of api.safaricom.co.ke
+        response = requests.post(
+            f"{base_url}/mpesa/stkpush/v1/processrequest",
+            json={
+                "BusinessShortCode": "174379",
+                "Amount": 100,
+                "PhoneNumber": "254712345678",
+                "CallBackURL": "https://yourapp.com/callback",
+                "AccountReference": "Order001",
+                "TransactionDesc": "Payment",
+            }
+        )
+    assert response.json()["ResponseCode"] == "0"
+    assert mock.last_stk_checkout_id  # store this to query status later
 
-    assert result.checkout_request_id == mock.last_stk_checkout_id
-    assert mock.calls[0].endpoint == "/mpesa/stkpush/v1/processrequest"
-    assert mock.calls[0].body["Amount"] == 100
+def test_stk_push_user_cancels():
+    # STK initiated OK, but user cancels on phone
+    mock.queue_scenarios(Scenario.SUCCESS, Scenario.USER_CANCELLED)
 
-def test_user_cancels():
-    mock = DarajaMock()
-    mock.set_scenario(Scenario.USER_CANCELLED)
     with mock.run() as base_url:
-        result = client.stk_query(mock.last_stk_checkout_id, base_url=base_url)
-    assert result.result_code == 1032
+        init = requests.post(f"{base_url}/mpesa/stkpush/v1/processrequest", json={"Amount": 100})
+        status = requests.post(f"{base_url}/mpesa/stkpushquery/v1/query", json={
+            "CheckoutRequestID": init.json()["CheckoutRequestID"]
+        })
+
+    assert status.json()["ResultCode"] == "1032"  # user cancelled
 ```
 
 ---
 
 ## Scenarios
 
-| Scenario | Triggers | Result code |
-|----------|----------|-------------|
-| `SUCCESS` | Default | 0 |
-| `USER_CANCELLED` | Customer pressed cancel | 1032 |
-| `INSUFFICIENT_FUNDS` | Not enough balance | 1 |
-| `TIMED_OUT` | PIN entry timed out | 1037 |
-| `WRONG_PIN` | Bad PIN entered | 2001 |
-| `SYSTEM_ERROR` | Daraja internal error | 17 / HTTP 500 |
-| `AUTH_FAILURE` | Bad consumer key | HTTP 400 on /oauth |
+| Scenario | ResultCode | Use for |
+|----------|-----------|---------|
+| `SUCCESS` | 0 | Happy path |
+| `USER_CANCELLED` | 1032 | User dismissed STK prompt |
+| `INSUFFICIENT_FUNDS` | 1 | Balance too low |
+| `TIMED_OUT` | 1037 | User did not respond in time |
+| `WRONG_PIN` | 2001 | Wrong M-Pesa PIN entered |
+| `SYSTEM_ERROR` | 17 | Safaricom internal error |
+| `AUTH_FAILURE` | — | OAuth returns HTTP 400 |
 
 ```python
-# Apply to all subsequent calls
+# Single scenario — all calls use this
 mock.set_scenario(Scenario.INSUFFICIENT_FUNDS)
 
-# Queue different outcomes for sequential calls
+# Queue — each call consumes one, then falls back to set_scenario
 mock.queue_scenarios(Scenario.SUCCESS, Scenario.USER_CANCELLED, Scenario.TIMED_OUT)
 ```
 
@@ -72,32 +85,46 @@ mock.queue_scenarios(Scenario.SUCCESS, Scenario.USER_CANCELLED, Scenario.TIMED_O
 
 ## Endpoints implemented
 
-| Endpoint | Method |
-|----------|--------|
-| `/oauth/v1/generate` | GET |
-| `/mpesa/stkpush/v1/processrequest` | POST |
-| `/mpesa/stkpushquery/v1/query` | POST |
-| `/mpesa/b2c/v3/paymentrequest` | POST |
-| `/mpesa/c2b/v1/registerurl` | POST |
-| `/mpesa/accountbalance/v1/query` | POST |
+| Endpoint | Method | Notes |
+|----------|--------|-------|
+| `/oauth/v1/generate` | GET | Returns `access_token` |
+| `/mpesa/stkpush/v1/processrequest` | POST | STK Push initiation |
+| `/mpesa/stkpushquery/v1/query` | POST | Poll STK status |
+| `/mpesa/b2c/v3/paymentrequest` | POST | B2C disbursement |
+| `/mpesa/c2b/v1/registerurl` | POST | C2B URL registration |
+| `/mpesa/accountbalance/v1/query` | POST | Balance enquiry |
 
 ---
 
 ## Callback simulation
 
-Build realistic STK Push callback payloads to test your webhook handler:
+For webhook-based flows, build a realistic callback payload and POST it to your handler:
 
 ```python
-# Success callback — includes receipt number, amount, phone
-payload = mock.build_stk_callback(scenario=Scenario.SUCCESS)
+# Simulate Safaricom posting to your callback URL
+payload = mock.build_stk_callback(
+    checkout_request_id="ws_CO_123",
+    scenario=Scenario.USER_CANCELLED,
+)
 
-# Failure callbacks
-payload = mock.build_stk_callback(scenario=Scenario.USER_CANCELLED)
-payload = mock.build_stk_callback(scenario=Scenario.INSUFFICIENT_FUNDS)
-
-# POST it to your FastAPI/Flask/Django handler in tests
-response = test_client.post("/api/mpesa/callback", json=payload)
+# POST to your FastAPI/Flask/Django handler
+response = test_client.post("/mpesa/stk/callback", json=payload)
 assert response.status_code == 200
+```
+
+---
+
+## Inspect calls
+
+```python
+with mock.run() as base_url:
+    # ... make calls ...
+    pass
+
+# After the context
+assert len(mock.calls) == 2
+assert mock.calls[0].endpoint == "/oauth/v1/generate"
+assert mock.calls[1].body["Amount"] == 100
 ```
 
 ---
@@ -105,49 +132,54 @@ assert response.status_code == 200
 ## Standalone server
 
 ```bash
-daraja-mock               # starts on http://localhost:8765
-daraja-mock --port 9000
+# Default port 8765
+python -m daraja_mock
+
+# Custom port
+python -m daraja_mock --port 9000
 ```
 
-Useful for manual testing with Postman or curl.
+Then point any HTTP client (Postman, curl, your app) at `http://localhost:8765`.
 
 ---
 
-## Inspecting calls
+## Use with mpesa-python
 
 ```python
-mock.calls          # list[CallRecord] — every request made
-mock.calls[0].endpoint     # "/mpesa/stkpush/v1/processrequest"
-mock.calls[0].body         # {"Amount": 100, "PhoneNumber": ...}
-mock.calls[0].received_at  # float unix timestamp
-
-mock.last_stk_checkout_id      # CheckoutRequestID from last STK push
-mock.last_b2c_conversation_id  # ConversationID from last B2C
-mock.last_token                # access_token from last /oauth call
-```
-
----
-
-## Used with mpesa-python
-
-```python
-# daraja-mock is the test companion for gabrielmahia/mpesa-python
+import pytest
 from daraja_mock import DarajaMock, Scenario
-from mpesa import MpesaClient
+from mpesa import MpesaClient  # github.com/gabrielmahia/mpesa-python
 
-def test_stk_push_insufficient_funds():
+@pytest.fixture
+def mpesa_client():
     mock = DarajaMock()
-    mock.queue_scenarios(Scenario.SUCCESS, Scenario.INSUFFICIENT_FUNDS)
     with mock.run() as base_url:
-        client = MpesaClient(..., base_url=base_url)
-        r1 = client.stk_push("0712345678", 100, "Ref1")
-        r2 = client.stk_push("0712345678", 9999999, "Ref2")
-    assert r1.response_code == "0"
-    assert r2.response_code == "0"  # initiation always succeeds
-    # failure arrives via callback — use build_stk_callback() to simulate it
+        client = MpesaClient(
+            consumer_key="test_key",
+            consumer_secret="test_secret",
+            shortcode="174379",
+            passkey="test_passkey",
+            base_url=base_url,
+        )
+        yield client, mock
+
+def test_full_stk_flow(mpesa_client):
+    client, mock = mpesa_client
+    result = client.stk_push("0712345678", 100, "Order001")
+    assert result.checkout_request_id == mock.last_stk_checkout_id
 ```
 
 ---
 
+## Design decisions
+
+**No external dependencies.** The server runs on Python's stdlib `HTTPServer`. No FastAPI, no httpx, no pytest-asyncio. This means it works in any test environment without dependency conflicts.
+
+**Thread-safe context manager.** Each `mock.run()` starts a server in a daemon thread and tears it down cleanly on exit. Multiple mocks can run concurrently on different ports.
+
+**Queue-based scenarios.** Real M-Pesa flows have two steps (initiate + query). `queue_scenarios` lets you specify each step independently: `SUCCESS` initiation followed by `USER_CANCELLED` status.
+
+---
+
+*Part of the [nairobi-stack](https://github.com/gabrielmahia/nairobi-stack) East Africa engineering ecosystem.*
 *Maintained by [Gabriel Mahia](https://github.com/gabrielmahia). Kenya × USA.*
-*Part of the [East Africa fintech toolkit](https://github.com/gabrielmahia/nairobi-stack).*
