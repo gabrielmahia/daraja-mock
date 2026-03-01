@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "daraja-mock"
+version = "1.0.0"
+description = "Local test server for the Safaricom M-Pesa Daraja v3 API — zero dependencies, configurable scenarios."
+readme = "README.md"
+license = {text = "CC-BY-NC-ND-4.0"}
+authors = [{name = "Gabriel Mahia", email = "contact@aikungfu.dev"}]
+keywords = ["mpesa", "safaricom", "daraja", "testing", "mock", "kenya", "fintech"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Testing :: Mocking",
+    "Programming Language :: Python :: 3",
+    "Typing :: Typed",
+]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff"]
+
+[project.scripts]
+daraja-mock = "daraja_mock.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/gabrielmahia/daraja-mock"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -q"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501"]
