@@ -5,18 +5,20 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "daraja-mock"
 version = "1.0.0"
-description = "Local test server for the Safaricom M-Pesa Daraja v3 API — zero dependencies, configurable scenarios."
+description = "Local test server for the Safaricom M-Pesa Daraja v3 API. Zero external dependencies."
 readme = "README.md"
 license = {text = "CC-BY-NC-ND-4.0"}
 authors = [{name = "Gabriel Mahia", email = "contact@aikungfu.dev"}]
-keywords = ["mpesa", "safaricom", "daraja", "testing", "mock", "kenya", "fintech"]
+keywords = ["mpesa", "safaricom", "daraja", "testing", "mock", "kenya", "fintech", "test-doubles"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Testing",
     "Topic :: Software Development :: Testing :: Mocking",
     "Programming Language :: Python :: 3",
-    "Typing :: Typed",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 requires-python = ">=3.10"
 dependencies = []
@@ -36,6 +38,7 @@ addopts = "--tb=short -q"
 
 [tool.ruff]
 line-length = 100
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W"]
