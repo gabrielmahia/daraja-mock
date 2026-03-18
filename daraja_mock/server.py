@@ -23,14 +23,11 @@ Usage:
     mock.set_b2c_result("success")
 """
 
-import hashlib
-import json
 import random
 import string
 import threading
 import time
 from datetime import datetime
-from typing import Optional
 
 from flask import Flask, jsonify, request
 

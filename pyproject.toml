@@ -24,7 +24,7 @@ requires-python = ">=3.10"
 dependencies = ["flask>=2.3"]
 
 [project.optional-dependencies]
-dev = ["pytest>=7", "ruff"]
+dev = ["pytest>=7", "ruff", "requests>=2.28"]
 
 [project.scripts]
 daraja-mock = "daraja_mock.__main__:main"
