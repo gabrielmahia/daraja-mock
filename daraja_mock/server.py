@@ -189,7 +189,7 @@ class DarajaMock:
 
         @app.route("/health")
         def health():
-            return jsonify({"status": "ok", "version": "1.0.1"})
+            return jsonify({"status": "ok", "version": "1.0.4"})
 
     # ── Server control ─────────────────────────────────────────────────────────
 
