@@ -27,6 +27,7 @@ import random
 import string
 import threading
 import time
+import warnings
 from datetime import datetime
 
 from flask import Flask, jsonify, request
@@ -67,12 +68,18 @@ class DarajaMock:
         return self
 
     def set_b2c_result(self, result: str) -> "DarajaMock":
-        """'success' | 'insufficient_funds' | 'invalid_msisdn'"""
+        """NO EFFECT YET. Accepted values would be 'success' | 'insufficient_funds' | 'invalid_msisdn'.
+
+        The B2C endpoint always returns an accepted response: real Daraja reports B2C failures asynchronously to ResultURL, and this mock does not send
+        asynchronous result callbacks. The value is stored but not used; a UserWarning says so."""
+        warnings.warn("set_b2c_result has no effect: the mock always accepts B2C requests and sends no async result callback", UserWarning, stacklevel=2)
         self._b2c_result = result
         return self
 
     def set_balance(self, amount: str) -> "DarajaMock":
-        """Set account balance string e.g. '5000.00'"""
+        """NO EFFECT YET. The balance endpoint always returns an accepted response; real Daraja delivers the balance asynchronously to ResultURL, which
+        this mock does not do. The value is stored but not used; a UserWarning says so."""
+        warnings.warn("set_balance has no effect: the mock always accepts balance requests and sends no async result callback", UserWarning, stacklevel=2)
         self._balance_amount = amount
         return self
 
@@ -182,7 +189,7 @@ class DarajaMock:
 
         @app.route("/health")
         def health():
-            return jsonify({"status": "ok", "version": "1.0.0"})
+            return jsonify({"status": "ok", "version": "1.0.1"})
 
     # ── Server control ─────────────────────────────────────────────────────────
 
