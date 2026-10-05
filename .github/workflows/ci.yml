@@ -18,6 +18,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
-      - run: pip install pytest ruff
+      - run: pip install -e ".[dev]"
       - run: ruff check daraja_mock/ tests/ --ignore E501
-      - run: pytest -q --tb=short
+      - run: python -m pytest -q --tb=short

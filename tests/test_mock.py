@@ -60,11 +60,13 @@ def test_b2c_success(mock):
     })
     assert r.json()["ResponseCode"] == "0"
 
-def test_b2c_insufficient_funds(mock):
+def test_b2c_result_setter_is_a_documented_no_op(mock):
+    # The old name of this test, test_b2c_insufficient_funds, claimed a simulation that never existed: the endpoint always accepts.
     m, url = mock
-    m.set_b2c_result("insufficient_funds")
+    with pytest.warns(UserWarning, match="no effect"):
+        m.set_b2c_result("insufficient_funds")
     r = requests.post(f"{url}/mpesa/b2c/v3/paymentrequest", json={})
-    assert r.status_code == 200  # Daraja always returns 200
+    assert r.status_code == 200 and r.json()["ResponseCode"] == "0"
 
 def test_request_log(mock):
     m, url = mock
@@ -91,7 +93,8 @@ def test_transaction_status(mock):
 
 def test_chaining(mock):
     m, url = mock
-    result = m.set_stk_result(1037).set_b2c_result("success").set_balance("9999.00")
+    with pytest.warns(UserWarning, match="no effect"):
+        result = m.set_stk_result(1037).set_b2c_result("success").set_balance("9999.00")
     assert result is m  # fluent API returns self
 
 def test_account_balance(mock):
