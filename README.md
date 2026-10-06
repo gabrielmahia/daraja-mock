@@ -1,6 +1,6 @@
 # daraja-mock
 
-A small local test double for the Safaricom M-Pesa Daraja API, built on Flask. It lets you exercise OAuth and STK Push flows (and the request shapes of a few other endpoints) without a Safaricom account, credentials or internet access.
+A small local test double for the Safaricom M-Pesa Daraja API, built on Flask. It lets you exercise OAuth and STK Push flows (and the request shapes of B2C v3, transaction status and account balance; there is no C2B, B2B or reversal endpoint, and those paths return 404) without a Safaricom account, credentials or internet access.
 
 [![CI](https://github.com/gabrielmahia/daraja-mock/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrielmahia/daraja-mock/actions)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](#)

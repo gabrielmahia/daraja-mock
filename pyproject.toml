@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "daraja-mock"
 version = "1.0.4"
-description = "Local test double for the Safaricom M-Pesa Daraja API (Flask). STK Push query results are configurable; other endpoints always accept."
+description = "Local test double for the Safaricom M-Pesa Daraja API (Flask). STK Push query results are configurable; B2C v3, transaction status and account balance always accept; other endpoints (C2B, B2B, reversal) return 404."
 readme = "README.md"
 license = {text = "CC-BY-NC-ND-4.0"}
 authors = [{name = "Gabriel Mahia", email = "contact@aikungfu.dev"}]
