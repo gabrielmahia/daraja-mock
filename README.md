@@ -81,7 +81,7 @@ export PESA_BASE_URL=http://127.0.0.1:8765
 pesa auth && pesa stk push 0712345678 100
 ```
 
-`mpesa-python` does not currently accept a custom base URL, so it cannot be pointed at this server yet.
+`daraja-v3` (the `mpesa-python` SDK) 0.1.2 and later accept `MpesaClient(..., base_url="http://localhost:8765")`, so the SDK can be pointed at this server; its own test suite does exactly that. `base_url` must be `https://`, or `http://` for localhost only.
 
 ## Limits
 
