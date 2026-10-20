@@ -1,13 +1,13 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "daraja-mock"
-version = "1.0.4"
+version = "1.0.5"
 description = "Local test double for the Safaricom M-Pesa Daraja API (Flask). STK Push query results are configurable; B2C v3, transaction status and account balance always accept; other endpoints (C2B, B2B, reversal) return 404."
 readme = "README.md"
-license = {text = "CC-BY-NC-ND-4.0"}
+license = "CC-BY-NC-ND-4.0"
 authors = [{name = "Gabriel Mahia", email = "contact@aikungfu.dev"}]
 keywords = ["mpesa", "safaricom", "daraja", "testing", "mock", "kenya", "fintech", "test-doubles"]
 classifiers = [
@@ -19,9 +19,13 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 requires-python = ">=3.10"
 dependencies = ["flask>=2.3"]
+license-files = ["LICENSE"]
 
 [project.optional-dependencies]
 dev = ["pytest>=7", "ruff", "requests>=2.28"]
