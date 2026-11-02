@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "daraja-mock"
-version = "1.0.5"
+version = "1.0.6"
 description = "Local test double for the Safaricom M-Pesa Daraja API (Flask). STK Push query results are configurable; B2C v3, transaction status and account balance always accept; other endpoints (C2B, B2B, reversal) return 404."
 readme = "README.md"
 license = "CC-BY-NC-ND-4.0"
@@ -16,14 +16,13 @@ classifiers = [
     "Topic :: Software Development :: Testing",
     "Topic :: Software Development :: Testing :: Mocking",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3.15",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = ["flask>=2.3"]
 license-files = ["LICENSE"]
 
@@ -42,7 +41,7 @@ addopts = "--tb=short -q"
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "W"]
