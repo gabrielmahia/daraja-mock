@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "daraja-mock"
-version = "1.0.6"
+version = "1.0.7"
 description = "Local test double for the Safaricom M-Pesa Daraja API (Flask). STK Push query results are configurable; B2C v3, transaction status and account balance always accept; other endpoints (C2B, B2B, reversal) return 404."
 readme = "README.md"
 license = "CC-BY-NC-ND-4.0"
@@ -33,6 +33,7 @@ dev = ["pytest>=7", "ruff", "requests>=2.28"]
 daraja-mock = "daraja_mock.__main__:main"
 
 [project.urls]
+Issues = "https://github.com/gabrielmahia/daraja-mock/issues"
 Homepage = "https://github.com/gabrielmahia/daraja-mock"
 
 [tool.pytest.ini_options]
