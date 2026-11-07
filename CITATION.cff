@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "daraja-mock"
+abstract: "Local test double for the Safaricom M-Pesa Daraja API (Flask). STK Push query results are configurable; B2C v3, transaction status and account balance always accept; other endpoints (C2B, B2B, reversal) return 404."
+version: "1.0.7"
+authors:
+  - family-names: "Mahia"
+    given-names: "Gabriel"
+repository-code: "https://github.com/gabrielmahia/daraja-mock"
+license: "CC-BY-NC-ND-4.0"
