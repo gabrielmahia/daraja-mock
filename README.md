@@ -4,7 +4,7 @@ A small local test double for the Safaricom M-Pesa Daraja API, built on Flask. I
 
 [![CI](https://github.com/gabrielmahia/daraja-mock/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrielmahia/daraja-mock/actions)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](#)
-[![License](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > **What this is, and is not.** A test double, not a simulator of Safaricom's behaviour, and not affiliated with Safaricom. Only the **STK Push query result** is configurable. B2C, Account Balance and Transaction Status always return an "accepted" response, and **no asynchronous result callbacks are sent**. See [Limits](#limits).
 
